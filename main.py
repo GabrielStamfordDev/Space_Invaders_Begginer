@@ -2,7 +2,7 @@ import pygame
 import sys
 from settings import Settings
 from ship import Ship
-
+from bullet import Bullet
 # BG_COLOR = (230, 230, 230)
 
 class AlienInvasion():
@@ -16,8 +16,15 @@ class AlienInvasion():
         self.clock  = pygame.time.Clock()
         pygame.display.set_caption("Alien Invasion")
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()
         # self.bg_color = (230,230,230)
     
+
+    def fire_bullet(self):
+        if len(self.bullets) < self.setting.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+
     def _check_keydown_events(self,event):
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = True
@@ -25,7 +32,9 @@ class AlienInvasion():
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
                 sys.exit()
-                    
+        elif event.key == pygame.K_SPACE:
+            self.fire_bullet()
+
     def _check_keyup_events(self,event):
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = False
@@ -43,14 +52,23 @@ class AlienInvasion():
     
     def _update_screen(self):
         self.screen.fill(self.setting.bg_color)
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         self.ship.blit_ship()
         pygame.display.flip()
+
+    def update_bullet(self):
+        self.bullets.update()
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
 
     def run_game(self):
         while True:
             self._check_event()
-            self._update_screen()
             self.ship.update()
+            self.update_bullet()
+            self._update_screen()
             self.clock.tick(60)
 
 if __name__ == "__main__":
