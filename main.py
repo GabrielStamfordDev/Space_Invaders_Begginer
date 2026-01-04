@@ -3,6 +3,7 @@ import sys
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 # BG_COLOR = (230, 230, 230)
 
 class AlienInvasion():
@@ -17,8 +18,31 @@ class AlienInvasion():
         pygame.display.set_caption("Alien Invasion")
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens  = pygame.sprite.Group()
+        self.create_fleet()
         # self.bg_color = (230,230,230)
     
+    def create_alien(self, x_pos, y_pos):
+        new_alien = Alien(self)
+        new_alien.x = x_pos
+        new_alien.rect.x = x_pos
+        new_alien.rect.y = y_pos
+        self.aliens.add(new_alien)
+
+    def create_fleet(self):
+        alien = Alien(self)
+        alien_width = alien.rect.width
+        alien_height = alien.rect.height
+        current_x, current_y = alien.rect.size
+        while current_y < (self.setting.screen_higth - 3 * alien_height):
+            while current_x < (self.setting.screen_width - 2 * alien_width):
+                self.create_alien(current_x, current_y)
+                current_x += 2 * alien_width
+            current_x = alien_width
+            current_y += 2 * alien_height
+
+    def update_aliens(self):
+        self.aliens.update()
 
     def fire_bullet(self):
         if len(self.bullets) < self.setting.bullets_allowed:
@@ -55,6 +79,7 @@ class AlienInvasion():
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship.blit_ship()
+        self.aliens.draw(self.screen)
         pygame.display.flip()
 
     def update_bullet(self):
@@ -68,6 +93,7 @@ class AlienInvasion():
             self._check_event()
             self.ship.update()
             self.update_bullet()
+            self.update_aliens()
             self._update_screen()
             self.clock.tick(60)
 
