@@ -29,11 +29,21 @@ class AlienInvasion():
         new_alien.rect.y = y_pos
         self.aliens.add(new_alien)
 
+    def check_edges(self):
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self.change_fleet_direction()
+                break
+    
+    def change_fleet_direction(self):
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.setting.fleet_y_speed
+        self.setting.fleet_direction *= -1
+
     def create_fleet(self):
         alien = Alien(self)
-        alien_width = alien.rect.width
-        alien_height = alien.rect.height
-        current_x, current_y = alien.rect.size
+        alien_width, alien_height = alien.rect.size
+        current_x, current_y = alien.rect.width, alien.rect.height
         while current_y < (self.setting.screen_higth - 3 * alien_height):
             while current_x < (self.setting.screen_width - 2 * alien_width):
                 self.create_alien(current_x, current_y)
@@ -42,6 +52,7 @@ class AlienInvasion():
             current_y += 2 * alien_height
 
     def update_aliens(self):
+        self.check_edges()
         self.aliens.update()
 
     def fire_bullet(self):
