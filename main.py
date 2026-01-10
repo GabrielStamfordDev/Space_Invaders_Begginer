@@ -1,21 +1,25 @@
 import pygame
 import sys
+import time
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from game_stats import GameStats
 # BG_COLOR = (230, 230, 230)
 
 class AlienInvasion():
     def __init__(self):
         pygame.init()
         self.setting = Settings()
+        self.playing = True
         self.screen = pygame.display.set_mode((self.setting.screen_width,self.setting.screen_higth))
         #self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         #self.setting.screen_height = self.screen.get_rect().height
         #self.setting.screen_width = self.screen.get_rect().width
         self.clock  = pygame.time.Clock()
         pygame.display.set_caption("Alien Invasion")
+        self.stats = GameStats(self)
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens  = pygame.sprite.Group()
@@ -55,7 +59,26 @@ class AlienInvasion():
         self.check_edges()
         self.aliens.update()
         if pygame.sprite.spritecollideany(self.ship, self.aliens):
-            print("Ship Hit!")
+            self.ship_hit()
+        self.aliens_check_bottom()
+
+    def aliens_check_bottom(self):
+        for alien in self.aliens:
+            if alien.rect.bottom >= self.setting.screen_higth:
+                self.ship_hit()
+                break
+
+    def ship_hit(self):
+        if self.stats.ships_left > 0:
+            self.stats.ships_left -= 1
+            self.bullets.empty()
+            self.aliens.empty()
+            self.create_fleet()
+            self.ship.center_ship()
+
+            time.sleep(1)
+        else:
+            self.playing = False
 
     def fire_bullet(self):
         if len(self.bullets) < self.setting.bullets_allowed:
@@ -107,10 +130,11 @@ class AlienInvasion():
     def run_game(self):
         while True:
             self._check_event()
-            self.ship.update()
-            self.update_bullet()
-            self.update_aliens()
-            self._update_screen()
+            if self.playing:
+                self.ship.update()
+                self.update_bullet()
+                self.update_aliens()
+                self._update_screen()
             self.clock.tick(60)
 
 if __name__ == "__main__":
