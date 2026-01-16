@@ -6,13 +6,14 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 # BG_COLOR = (230, 230, 230)
 
 class AlienInvasion():
     def __init__(self):
         pygame.init()
         self.setting = Settings()
-        self.playing = True
+        self.playing = False
         self.screen = pygame.display.set_mode((self.setting.screen_width,self.setting.screen_higth))
         #self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         #self.setting.screen_height = self.screen.get_rect().height
@@ -23,6 +24,7 @@ class AlienInvasion():
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens  = pygame.sprite.Group()
+        self.play_button = Button(self, "Play")
         self.create_fleet()
         # self.bg_color = (230,230,230)
     
@@ -116,6 +118,8 @@ class AlienInvasion():
             bullet.draw_bullet()
         self.ship.blit_ship()
         self.aliens.draw(self.screen)
+        if not self.playing:
+            self.play_button.draw_button()
         pygame.display.flip()
 
     def update_bullet(self):
@@ -134,7 +138,7 @@ class AlienInvasion():
                 self.ship.update()
                 self.update_bullet()
                 self.update_aliens()
-                self._update_screen()
+            self._update_screen()
             self.clock.tick(60)
 
 if __name__ == "__main__":
