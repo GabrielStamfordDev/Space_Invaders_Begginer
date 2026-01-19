@@ -7,6 +7,7 @@ from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
 # BG_COLOR = (230, 230, 230)
 
 class AlienInvasion():
@@ -24,6 +25,7 @@ class AlienInvasion():
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens  = pygame.sprite.Group()
+        self.sb = Scoreboard(self)
         self.difficulty = 'medium'
         self.button_color_inactive = (0,0,0)
         self.button_color_active   = (0,255,0) 
@@ -119,9 +121,10 @@ class AlienInvasion():
             self.aliens.empty()
             self.create_fleet()
             self.ship.center_ship()
-
+            self.sb.prep_ships()
             time.sleep(1)
         else:
+            self.sb.prep_ships()
             self.playing = False
             pygame.mouse.set_visible(True)
 
@@ -187,6 +190,9 @@ class AlienInvasion():
             self.aliens.empty()
             self.create_fleet()
             self.ship.center_ship()
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_ships()
             pygame.mouse.set_visible(False)
 
     def start_game(self):
@@ -198,6 +204,9 @@ class AlienInvasion():
             self.aliens.empty()
             self.create_fleet()
             self.ship.center_ship()
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_ships()
             pygame.mouse.set_visible(False)
     
     def _update_screen(self):
@@ -206,6 +215,7 @@ class AlienInvasion():
             bullet.draw_bullet()
         self.ship.blit_ship()
         self.aliens.draw(self.screen)
+        self.sb.show_score()
         if not self.playing:
             self.play_button.draw_button()
             self.easy_button.draw_button()
@@ -219,10 +229,17 @@ class AlienInvasion():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, False, True) # True arguments say who is gonna disapear when colission happens
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.setting.score_alien * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_max_score()
         if not self.aliens:
             self.bullets.empty()
             self.create_fleet()
             self.setting.increase_difficult()
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def run_game(self):
         while True:
